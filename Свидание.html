@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Для тебя 💌</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --rose:    #C8637A;
+    --deep:    #7B2D3E;
+    --blush:   #F2D4D9;
+    --cream:   #FDF6F0;
+    --text:    #3A2028;
+    --muted:   #9B7280;
+  }
+
+  html { font-size: 16px; scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Petals ── */
+  .petals { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .petal {
+    position: absolute;
+    top: -60px;
+    width: 18px; height: 24px;
+    background: radial-gradient(ellipse at 40% 30%, #f7b8c4, #e07a91 60%, #c05070);
+    border-radius: 50% 10% 50% 10%;
+    opacity: 0;
+    animation: fall linear infinite;
+  }
+  @keyframes fall {
+    0%   { transform: translateY(0) rotate(0deg) scale(1); opacity:.85; }
+    80%  { opacity:.6; }
+    100% { transform: translateY(110vh) rotate(420deg) scale(.7); opacity:0; }
+  }
+
+  /* ── Layout ── */
+  .screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+  .screen.active { display: flex; }
+
+  .card {
+    background: #fff;
+    border-radius: 28px;
+    padding: 3rem 2.5rem;
+    max-width: 520px;
+    width: 100%;
+    box-shadow: 0 8px 48px rgba(122,45,62,.12), 0 2px 8px rgba(122,45,62,.06);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(242,212,217,.25) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  /* ── Typography ── */
+  .eyebrow {
+    font-size: .75rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--rose);
+    margin-bottom: 1rem;
+    font-weight: 500;
+  }
+  h1, h2 {
+    font-family: 'Playfair Display', serif;
+    color: var(--deep);
+    line-height: 1.2;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 2.8rem); margin-bottom: 1rem; }
+  h2 { font-size: clamp(1.4rem, 4vw, 1.9rem); margin-bottom: 1.4rem; }
+  p  { color: var(--muted); line-height: 1.7; margin-bottom: 1.6rem; font-size: .97rem; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding: .85rem 2.2rem;
+    border: none;
+    border-radius: 999px;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform .18s, box-shadow .18s;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--rose), var(--deep));
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(122,45,62,.35);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(122,45,62,.4); }
+  
+  .btn-no {
+    background: var(--deep);
+    color: #fff;
+    position: fixed;
+    white-space: nowrap;
+    z-index: 10;
+    font-size: .9rem;
+    padding: .7rem 1.6rem;
+    border-radius: 999px;
+    box-shadow: 0 4px 12px rgba(122,45,62,0.2);
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  .q1-btns {
+    display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: .5rem;
+    min-height: 60px; align-items: center;
+  }
+
+  /* ── Progress dots ── */
+  .dots { display: flex; gap: .5rem; justify-content: center; margin-bottom: 2.2rem; }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--blush);
+    transition: background .3s, transform .3s;
+  }
+  .dot.active { background: var(--rose); transform: scale(1.3); }
+  .dot.done   { background: var(--deep); }
+
+  /* ── Activity & Cuisine grids ── */
+  .activities, .cuisines {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(138px, 1fr));
+    gap: .75rem;
+    margin: 1.2rem 0 1.8rem;
+  }
+  .act-btn, .cui-btn {
+    padding: .9rem .6rem;
+    border: 2px solid var(--blush);
+    border-radius: 16px;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color .2s, background .2s, transform .15s;
+    font-family: 'Inter', sans-serif;
+    font-size: .85rem;
+    color: var(--text);
+    display: flex; flex-direction: column; align-items: center; gap: .4rem;
+  }
+  .act-btn .ico, .cui-btn .ico { font-size: 1.7rem; }
+  .act-btn:hover, .cui-btn:hover { border-color: var(--rose); transform: translateY(-2px); }
+  
+  .act-btn.selected, .cui-btn.selected {
+    border-color: var(--deep);
+    background: linear-gradient(135deg, #fdf0f3, #f9e4e9);
+    color: var(--deep);
+    font-weight: 500;
+  }
+  .act-error, .cui-error { color: #e05; font-size: .82rem; margin-top: -.8rem; margin-bottom:.8rem; display:none; }
+
+  /* ── Calendar & Time ── */
+  .calendar { width: 100%; margin: 1rem 0 1.6rem; }
+  .cal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .cal-header span { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--deep); }
+  .cal-nav {
+    background: var(--blush); border: none; border-radius: 50%;
+    width: 34px; height: 34px; cursor: pointer; font-size: 1rem; color: var(--deep);
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s;
+  }
+  .cal-nav:hover { background: var(--rose); color: #fff; }
+  .cal-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
+  }
+  .cal-day-name {
+    text-align: center; font-size: .7rem; font-weight: 600;
+    color: var(--muted); padding: .3rem 0; letter-spacing: .06em;
+  }
+  .cal-day {
+    text-align: center; padding: .5rem .2rem;
+    border-radius: 10px; cursor: pointer;
+    font-size: .88rem; transition: background .2s, color .2s;
+    border: 2px solid transparent;
+    user-select: none;
+  }
+  .cal-day:hover:not(.empty):not(.past) { background: var(--blush); }
+  .cal-day.empty { cursor: default; }
+  .cal-day.past  { color: #ccc; cursor: default; }
+  .cal-day.today { font-weight: 700; color: var(--rose); }
+  .cal-day.suggested {
+    background: linear-gradient(135deg, #ffe0ea, #ffd0df);
+    border-color: var(--rose);
+    font-weight: 700;
+    color: var(--deep);
+    box-shadow: 0 2px 8px rgba(200,99,122,.25);
+  }
+  .cal-day.selected-day {
+    background: linear-gradient(135deg, var(--rose), var(--deep)) !important;
+    color: #fff !important; border-color: transparent !important;
+    font-weight: 700;
+  }
+  .cal-hint { font-size: .78rem; color: var(--rose); margin-top: .6rem; }
+  .cal-error { color: #e05; font-size: .82rem; display:none; margin-bottom: .8rem; }
+
+  /* Блок выбора времени */
+  .time-picker-wrapper {
+    margin: 1.5rem 0 1rem;
+    text-align: left;
+  }
+  .time-picker-wrapper label {
+    font-size: 0.85rem;
+    color: var(--deep);
+    font-weight: 500;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  .time-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--blush);
+    border-radius: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    color: var(--text);
+    background-color: #fff;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .time-select:focus {
+    border-color: var(--rose);
+  }
+
+  /* ── Final screen ── */
+  .heart-burst { font-size: 4rem; margin-bottom: 1rem; animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.15);} }
+  .summary {
+    background: var(--blush); border-radius: 18px; padding: 1.2rem 1.4rem;
+    margin: 1.2rem 0 1.6rem; text-align: left; font-size: .9rem; color: var(--deep);
+    line-height: 1.8;
+  }
+  .summary strong { color: var(--deep); }
+
+  /* ── Sending state ── */
+  .sending-msg { font-size: .85rem; color: var(--muted); margin-top: .8rem; }
+
+  @media (max-width: 480px) {
+    .card { padding: 2rem 1.3rem; }
+    .activities, .cuisines { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="petals" id="petals"></div>
+
+<div class="screen active" id="s0">
+  <div class="card">
+    <div class="eyebrow">Для самой особенной</div>
+    <h1>Привет, мась❤️ </h1>
+    <p>У меня есть для тебя кое-что важное.<br>Это займёт всего пару минут, обещаю 🌸</p>
+    <button class="btn btn-primary" onclick="goTo(1)">Открыть ✨</button>
+  </div>
+</div>
+
+<div class="screen" id="s1">
+  <div class="card">
+    <div class="dots">
+      <div class="dot active"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+    <div class="eyebrow">Самый важный вопрос</div>
+    <h2>Пойдёшь ли ты со мной на свидание? 💕</h2>
+    <p>Подумай хорошенько... хотя, думаю, ты уже знаешь ответ 😊</p>
+    <div class="q1-btns">
+      <button class="btn btn-primary" id="yesBtn" onclick="onYes()">Да! 🥰</button>
+      <button class="btn btn-no" id="noBtn">Нет 🙁</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="s2">
+  <div class="card">
+    <div class="dots">
+      <div class="dot done"></div>
+      <div class="dot active"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+    <div class="eyebrow">Вопрос второй</div>
+    <h2>Что бы тебе хотелось? 🎀</h2>
+    <p>Выбери активность, которая тебя больше всего привлекает</p>
+    <div class="activities" id="actGrid"></div>
+    <div class="act-error" id="actError">Пожалуйста, выбери хотя бы одну активность 🌸</div>
+    <button class="btn btn-primary" onclick="onActivity()">Дальше →</button>
+  </div>
+</div>
+
+<div class="screen" id="s25">
+  <div class="card">
+    <div class="dots">
+      <div class="dot done"></div>
+      <div class="dot done"></div>
+      <div class="dot active"></div>
+      <div class="dot"></div>
+    </div>
+    <div class="eyebrow">Вкусовые предпочтения</div>
+    <h2>Какую кухню выберем? 🍕</h2>
+    <p>Что бы тебе хотелось попробовать или перекусить?</p>
+    <div class="cuisines" id="cuiGrid"></div>
+    <div class="cui-error" id="cuiError">Пожалуйста, выбери предпочтение в еде 🌸</div>
+    <button class="btn btn-primary" onclick="onCuisine()">Дальше →</button>
+  </div>
+</div>
+
+<div class="screen" id="s3">
+  <div class="card">
+    <div class="dots">
+      <div class="dot done"></div>
+      <div class="dot done"></div>
+      <div class="dot done"></div>
+      <div class="dot active"></div>
+    </div>
+    <div class="eyebrow">Последний вопрос</div>
+    <h2>Выбери дату и время 📅</h2>
+    <p>Когда тебе удобно? Я подстроюсь под тебя ✨</p>
+    <div class="calendar" id="calendarEl"></div>
+    
+    <div class="time-picker-wrapper">
+      <label for="timeSelect">🕒 Во сколько встретимся?</label>
+      <select id="timeSelect" class="time-select">
+        <option value="12:00">12:00</option>
+        <option value="12:30">12:30</option>
+        <option value="13:00">13:00</option>
+        <option value="13:30">13:30</option>
+        <option value="14:00">14:00</option>
+        <option value="14:30">14:30</option>
+        <option value="15:00">15:00</option>
+        <option value="15:30">15:30</option>
+        <option value="16:00">16:00</option>
+        <option value="16:30">16:30</option>
+        <option value="17:00">17:00</option>
+        <option value="17:30">17:30</option>
+        <option value="18:00" selected>23:00 (Рекомендую ✨)</option>
+        <option value="18:30">18:30</option>
+        <option value="19:00">19:00</option>
+        <option value="19:30">19:30</option>
+        <option value="20:00">20:00</option>
+        <option value="20:30">20:30</option>
+        <option value="21:00">21:00</option>
+      </select>
+    </div>
+
+    <div class="cal-error" id="calError">Выбери дату, пожалуйста 🗓️</div>
+    <button class="btn btn-primary" onclick="onDate()">Готово 💌</button>
+  </div>
+</div>
+
+<div class="screen" id="s4">
+  <div class="card">
+    <div class="heart-burst">💖</div>
+    <div class="eyebrow">Ура!</div>
+    <h2>Ты лучшее, что со мной случилось</h2>
+    <p>Я так рад, что ты согласилась. Буду ждать нашего свидания с нетерпением!</p>
+    <div class="summary" id="summaryBox"></div>
+    <p style="font-size:.88rem; color:var(--muted)">
+      Я уже всё знаю — готовлю кое-что особенное специально для тебя 🌹
+    </p>
+    <div class="sending-msg" id="sendingMsg">Отправляю... ✨</div>
+  </div>
+</div>
+
+<script>
+/* ── Petals ── */
+const petalContainer = document.getElementById('petals');
+for (let i = 0; i < 22; i++) {
+  const p = document.createElement('div');
+  p.className = 'petal';
+  const size = 10 + Math.random() * 14;
+  p.style.cssText = `
+    left:${Math.random()*100}%;
+    width:${size}px; height:${size*1.4}px;
+    animation-duration:${5+Math.random()*8}s;
+    animation-delay:${Math.random()*10}s;
+    opacity:0;
+    transform:rotate(${Math.random()*360}deg);
+  `;
+  petalContainer.appendChild(p);
+}
+
+/* ── State ── */
+let selectedActivity = null;
+let selectedCuisine  = null;
+let selectedDate     = null;
+
+/* ── Navigation ── */
+function goTo(n) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s' + n).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+/* ── Q1: Fleeing No button ── */
+const noBtn = document.getElementById('noBtn');
+let noBtnPlaced = false;
+
+function placeNoBtn() {
+  if (!noBtnPlaced) {
+    const s1 = document.getElementById('s1');
+    noBtn.style.position = 'absolute';
+    noBtn.style.left = 'calc(50% + 40px)';
+    noBtn.style.top = '75%';
+    noBtnPlaced = true;
+  }
+}
+
+function randomizeNoBtn() {
+  if (noBtn.style.position !== 'fixed') {
+    noBtn.style.position = 'fixed';
+  }
+  const margin = 30;
+  const bw = noBtn.offsetWidth  || 120;
+  const bh = noBtn.offsetHeight || 44;
+  const x = margin + Math.random() * (window.innerWidth  - bw - margin*2);
+  const y = margin + Math.random() * (window.innerHeight - bh - margin*2);
+  noBtn.style.left = x + 'px';
+  noBtn.style.top  = y + 'px';
+}
+
+noBtn.addEventListener('mouseenter', randomizeNoBtn);
+noBtn.addEventListener('touchstart', (e) => { 
+  e.preventDefault(); 
+  randomizeNoBtn(); 
+}, {passive:false});
+noBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  randomizeNoBtn();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  placeNoBtn();
+});
+
+function onYes() {
+  if (noBtnPlaced) noBtn.style.display = 'none';
+  buildActivities();
+  goTo(2);
+}
+
+/* ── Q2: Activities ── */
+const ACTIVITIES = [
+  { ico: '🎡', label: 'Парк Ашхабад' },
+  { ico: '🎭', label: 'Театр' },
+  { ico: '🍣', label: 'Ужин в ресторане' },
+  { ico: '🎳', label: 'Боулинг' },
+  { ico: '🎨', label: 'Art&Craft кафе' },
+  { ico: '🌿', label: 'Ботанический сад' },
+  { ico: '🎠', label: 'Луна-парк' },
+  { ico: '🎬', label: 'Кино' },
+  { ico: '🧁', label: 'Кофейня' },
+  { ico: '🏊', label: 'Аквапарк' },
+];
+
+function buildActivities() {
+  const grid = document.getElementById('actGrid');
+  grid.innerHTML = '';
+  ACTIVITIES.forEach(a => {
+    const b = document.createElement('button');
+    b.className = 'act-btn';
+    b.innerHTML = `<span class="ico">${a.ico}</span><span>${a.label}</span>`;
+    b.dataset.label = a.label;
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.act-btn').forEach(x => x.classList.remove('selected'));
+      b.classList.add('selected');
+      selectedActivity = a.label;
+      document.getElementById('actError').style.display = 'none';
+    });
+    grid.appendChild(b);
+  });
+}
+
+function onActivity() {
+  if (!selectedActivity) {
+    document.getElementById('actError').style.display = 'block';
+    return;
+  }
+  buildCuisines();
+  goTo(25);
+}
+
+/* ── Q2.5: Cuisines ── */
+const CUISINES = [
+  { ico: '🍣', label: 'Суши & Роллы' },
+  { ico: '🍕', label: 'Пицца & Паста' },
+  { ico: '🍔', label: 'Бургеры & Стейки' },
+  { ico: '🥙', label: 'Турецкая кухня' },
+  { ico: '🥢', label: 'Корейская / Азиатская' },
+  { ico: '🍰', label: 'Десерты & Кофе' }
+];
+
+function buildCuisines() {
+  const grid = document.getElementById('cuiGrid');
+  grid.innerHTML = '';
+  CUISINES.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'cui-btn';
+    b.innerHTML = `<span class="ico">${c.ico}</span><span>${c.label}</span>`;
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.cui-btn').forEach(x => x.classList.remove('selected'));
+      b.classList.add('selected');
+      selectedCuisine = c.label;
+      document.getElementById('cuiError').style.display = 'none';
+    });
+    grid.appendChild(b);
+  });
+}
+
+function onCuisine() {
+  if (!selectedCuisine) {
+    document.getElementById('cuiError').style.display = 'block';
+    return;
+  }
+  buildCalendar();
+  goTo(3);
+}
+
+/* ── Q3: Calendar ── */
+let calYear, calMonth;
+const SUGGESTED = { y: 2026, m: 5, d: 23 }; // June = month index 5
+
+function buildCalendar() {
+  const now = new Date();
+  calYear  = now.getFullYear();
+  calMonth = now.getMonth();
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const container = document.getElementById('calendarEl');
+  const months = ['Январь','Февраль','Март','Апрель','Май','Июнь',
+                   'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  const days   = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  const now    = new Date();
+  const today  = { y: now.getFullYear(), m: now.getMonth(), d: now.getDate() };
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const offset   = (firstDay === 0) ? 6 : firstDay - 1;
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+
+  let html = `
+    <div class="cal-header">
+      <button class="cal-nav" onclick="shiftMonth(-1)">‹</button>
+      <span>${months[calMonth]} ${calYear}</span>
+      <button class="cal-nav" onclick="shiftMonth(1)">›</button>
+    </div>
+    <div class="cal-grid">
+  `;
+  days.forEach(d => html += `<div class="cal-day-name">${d}</div>`);
+  for (let i = 0; i < offset; i++) html += `<div class="cal-day empty"></div>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isPast = (calYear < today.y) ||
+                   (calYear === today.y && calMonth < today.m) ||
+                   (calYear === today.y && calMonth === today.m && d < today.d);
+    const isToday     = calYear === today.y && calMonth === today.m && d === today.d;
+    const isSuggested = calYear === SUGGESTED.y && calMonth === SUGGESTED.m && d === SUGGESTED.d;
+    const isSelected  = selectedDate &&
+                        selectedDate.y === calYear && selectedDate.m === calMonth && selectedDate.d === d;
+    let cls = 'cal-day';
+    if (isPast)      cls += ' past';
+    if (isToday)     cls += ' today';
+    if (isSuggested && !isPast) cls += ' suggested';
+    if (isSelected)  cls += ' selected-day';
+    const onclick = isPast ? '' : `onclick="selectDay(${d})"`;
+    html += `<div class="${cls}" ${onclick}>${d}</div>`;
+  }
+  html += `</div>`;
+  if (calYear === SUGGESTED.y && calMonth === SUGGESTED.m)
+    html += `<p class="cal-hint">💡 Подсказка: 23 июня — идеальный день 🌸</p>`;
+  container.innerHTML = html;
+}
+
+function shiftMonth(dir) {
+  calMonth += dir;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth <  0) { calMonth = 11; calYear--; }
+  renderCalendar();
+}
+
+function selectDay(d) {
+  selectedDate = { y: calYear, m: calMonth, d };
+  document.getElementById('calError').style.display = 'none';
+  renderCalendar();
+}
+
+function onDate() {
+  if (!selectedDate) {
+    document.getElementById('calError').style.display = 'block';
+    return;
+  }
+  showFinal();
+}
+
+/* ── Final & Telegram ── */
+function showFinal() {
+  const months = ['января','февраля','марта','апреля','мая','июня',
+                  'июля','августа','сентября','октября','ноября','декабря'];
+  const selectedTime = document.getElementById('timeSelect').value;
+  const dateStr = `${selectedDate.d} ${months[selectedDate.m]} ${selectedDate.y}`;
+  
+  document.getElementById('summaryBox').innerHTML = `
+    <strong>📋 Твои ответы:</strong><br>
+    💑 Свидание: <strong>Да, конечно!</strong><br>
+    🎉 Активность: <strong>${selectedActivity}</strong><br>
+    🍕 Предпочтение в еде: <strong>${selectedCuisine}</strong><br>
+    📅 Дата: <strong>${dateStr}</strong><br>
+    🕒 Время: <strong>${selectedTime}</strong>
+  `;
+  goTo(4);
+  sendTelegram(dateStr, selectedTime);
+}
+
+async function sendTelegram(dateStr, timeStr) {
+  // ⬇️ ВСТАВЬ СЮДА СВОЙ ТОКЕН ОТ @BotFather
+  const BOT_TOKEN = 'https://t.me/date2couple_bot'; 
+  
+  // ⬇️ Твой Chat ID
+  const CHAT_ID   = '5825446876';
+
+  const text = `💌 Новый ответ на твоё приглашение!\n\n` +
+               `💑 Свидание: Да, конечно!\n` +
+               `🎉 Активность: ${selectedActivity}\n` +
+               `🍕 Кухня: ${selectedCuisine}\n` +
+               `📅 Дата: ${dateStr}\n` +
+               `🕒 Время: ${timeStr}`;
+
+  const msg = document.getElementById('sendingMsg');
+
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: CHAT_ID, text: text })
+    });
+    const j = await r.json();
+    msg.textContent = j.ok ? '✅ Я уже всё знаю!' : '⚠️ Что-то пошло не так с уведомлением.';
+  } catch(e) {
+    msg.textContent = '⚠️ Не удалось отправить уведомление.';
+  }
+}
+</script>
+</body>
+</html>
