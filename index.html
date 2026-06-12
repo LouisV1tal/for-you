@@ -640,8 +640,8 @@ function showFinal() {
 }
 
 async function sendTelegram(dateStr, timeStr) {
-  // ⬇️ ВСТАВЬ СЮДА СВОЙ ТОКЕН ОТ @BotFather
-  const BOT_TOKEN = 'https://t.me/date2couple_bot'; 
+  // ⬇️ Вставь сюда токен (чистый набор символов, БЕЗ ссылок типа https://t.me/)
+  const BOT_TOKEN = '8942603307:AAGjfPkO2Un26ygv4905pBkp20An8UNXm04'; 
   
   // ⬇️ Твой Chat ID
   const CHAT_ID   = '5825446876';
@@ -662,7 +662,11 @@ async function sendTelegram(dateStr, timeStr) {
       body: JSON.stringify({ chat_id: CHAT_ID, text: text })
     });
     const j = await r.json();
-    msg.textContent = j.ok ? '✅ Я уже всё знаю!' : '⚠️ Что-то пошло не так с уведомлением.';
+    if (j.ok) {
+      msg.textContent = '✅ Я уже всё знаю!';
+    } else {
+      msg.textContent = '⚠️ Ошибка бота: ' + j.description;
+    }
   } catch(e) {
     msg.textContent = '⚠️ Не удалось отправить уведомление.';
   }
